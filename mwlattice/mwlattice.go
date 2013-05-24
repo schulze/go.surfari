@@ -5,6 +5,13 @@
 // Mordell-Weil lattices".
 package main
 
+// TODO
+// o Should consider also the torsion sections that are possible for each configuration.
+//   Then d_NS = disc(trivial lattice) * height(P) / #MW
+// o WalkHeights should not print results but return them or pass them down some channel.
+// o At some point add discriminant forms computations to compute the transcendental lattice.
+//   (c.f. Shimada, Zhang; Classification of extremal elliptic K3 surfaces and fundamental groups of open K3 surfaces)
+
 import (
 	nt "github.com/schulze/go.surfari/frac"
 	// "big"
@@ -75,7 +82,6 @@ func NewD(n int) *Fibre {
 // NewE returns a fibre of type E_n, with n=6,7 or 8.
 func NewE(n int) *Fibre {
 	i := strconv.Itoa(n)
-	// TODO(fs) These are wrong.
 	var contr []*nt.Frac
 	switch n {
 	case 6: contr = []*nt.Frac{nt.NewFrac(0,1), nt.NewFrac(4, 3)}
