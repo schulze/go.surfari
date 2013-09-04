@@ -13,7 +13,7 @@ package main
 //   (c.f. Shimada, Zhang; Classification of extremal elliptic K3 surfaces and fundamental groups of open K3 surfaces)
 
 import (
-	nt "github.com/schulze/go.surfari/frac"
+	nt "github.com/schulze/surfari/frac"
 	// "big"
 	"fmt"
 	"strconv"
