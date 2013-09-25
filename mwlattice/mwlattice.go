@@ -20,10 +20,11 @@ import (
 	"flag"
 )
 
-var D, R int
+var D, R, zeroIntersection  int
 func init() {
 	flag.IntVar(&D, "D", 35, "discriminant of the lattice we want to construct")
 	flag.IntVar(&R, "R", 17, "rank of the lattice we want to construct")
+	flag.IntVar(&zeroIntersection, "intersection", 0, "intersection number of zero section and free section")
 }
 
 // Fibre represents the root lattice of a singular fibre.
@@ -149,12 +150,15 @@ func (c Config) WalkHeights (d int) {
 
 func (c Config) walkHeightsIter (contr *nt.Frac, rest Config, inter []int, goal *nt.Frac) {
 	if len(rest) == 0 {
-		four := nt.NewFrac(4,1)
-		t := nt.NewFrac(0,1)
-		t.Sub(four, contr)
-		t.Mul(t, nt.NewFrac(c.Disc(),1))
-		if t.Equal(goal) {
-			fmt.Println(c, "with inter=", inter, "contr=", contr, "d_T=", c.Disc(), "d_NS=", t)
+		height := nt.NewFrac(4,1)
+		if zeroIntersection != 0 {
+			height.Add(height, nt.NewFrac(2*zeroIntersection, 1))
+		}
+		height.Sub(height, contr)
+		disc := nt.NewFrac(0,1)
+		disc.Mul(height, nt.NewFrac(c.Disc(),1))
+		if disc.Equal(goal) {
+			fmt.Println(c, "with inter=", inter, "contr=", contr, "d_T=", c.Disc(), "d_NS=", disc)
 		}
 	} else {
 		for i, v := range rest[0].Contrib() {
@@ -168,7 +172,7 @@ func WalkConfigs(d, r int, c Config, fibers []*Fibre) {
 	if c.Euler() > 24 { // TODO(fs) It is enough to check for r?
 		return
 	}
-	if c.Rank() <= r {
+	if c.Rank() == r {
 		c.WalkHeights(d)
 	}
 	if c.Rank() < r {
@@ -193,9 +197,6 @@ func main() {
 	for i := 4; i < 14; i++ {
 		fibres = append(fibres, NewD(i))
 	}
-	//for _, v := range fibres {
-	//	fmt.Println(v, v.Contrib())
-	//}
 	for i, v := range fibres {
 		WalkConfigs(D, R, Config{v}, fibres[i:])
 	}
