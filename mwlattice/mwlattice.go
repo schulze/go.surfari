@@ -60,7 +60,7 @@ func init() {
 // NewA returns a fibre of type A_n.
 func NewA(n int) *Fibre {
 	i := strconv.Itoa(n)
-	contr := make([]*nt.Frac, (n+1)/2)  // A_n fibres are symmetric
+	contr := make([]*nt.Frac, (n+1)/2 + 1)  // A_n fibres are symmetric
 	for i, _ := range contr {
 		contr[i] = nt.NewFrac(i*((n+1)-i), n+1)
 	}
@@ -71,11 +71,10 @@ func NewA(n int) *Fibre {
 func NewD(n int) *Fibre {
 	//TODO(fs) should check d >= 4
 	i := strconv.Itoa(n)
-	contr := make([]*nt.Frac, 4)
+	contr := make([]*nt.Frac, 3) // no contr[3] as the two far components are symmetric
 	contr[0] = nt.NewFrac(0, 1)
 	contr[1] = nt.NewFrac(1, 1)
 	contr[2] = nt.NewFrac(n, 4)
-	contr[3] = nt.NewFrac(n, 4)
 
 	return &Fibre{n+2, n, 4, "D_" + i, contr}
 }
@@ -167,9 +166,9 @@ func (c Config) walkHeightsIter (contr *nt.Frac, rest Config, inter []int, goal 
 	}
 }
 
-// WalkConfigs calls WalkHeights for all fibre configurations with rank <= r.
+// WalkConfigs calls WalkHeights for all fibre configurations with rank == r.
 func WalkConfigs(d, r int, c Config, fibers []*Fibre) {
-	if c.Euler() > 24 { // TODO(fs) It is enough to check for r?
+	if c.Euler() > 24 {
 		return
 	}
 	if c.Rank() == r {
