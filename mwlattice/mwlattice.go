@@ -1,4 +1,4 @@
-// Enumeration of singular fibre configurations for K3 surfaces
+// Enumeration of singular fiber configurations for K3 surfaces
 // with trivial lattice of rank 19, a section and given discriminant.
 //
 // For the computation of the discriminants see Shioda's "On the
@@ -20,7 +20,11 @@ import (
 	"strconv"
 )
 
-var D, R, zeroIntersection int
+var (
+	D                int // the discriminant of the lattices we are looking for
+	R                int // the rank of the lattices we are looking for
+	zeroIntersection int // intersection number of section with the zero-section
+)
 
 func init() {
 	flag.IntVar(&D, "D", 35, "discriminant of the lattice we want to construct")
@@ -28,8 +32,8 @@ func init() {
 	flag.IntVar(&zeroIntersection, "intersection", 0, "intersection number of zero section and free section")
 }
 
-// Fibre represents the root lattice of a singular fibre.
-type Fibre struct {
+// Fiber represents the root lattice of a singular fiber.
+type Fiber struct {
 	e     int        // Euler number
 	r     int        // rank
 	d     int        // discriminant
@@ -37,16 +41,16 @@ type Fibre struct {
 	contr []*nt.Frac // contribution of components to the height of sections
 }
 
-// Config represents a configuration of singular fibres of ADE-type.
-type Config []*Fibre
+// Config represents a configuration of singular fibers of ADE-type.
+type Config []*Fiber
 
-// The root lattices of singular fibres.
+// The root lattices of singular fibers.
 var (
 	E6 = NewE(6)
 	E7 = NewE(7)
 	E8 = NewE(8)
-	An = make([]*Fibre, 18)
-	Dn = make([]*Fibre, 14)
+	An = make([]*Fiber, 18)
+	Dn = make([]*Fiber, 14)
 )
 
 func init() {
@@ -58,18 +62,18 @@ func init() {
 	}
 }
 
-// NewA returns a fibre of type A_n.
-func NewA(n int) *Fibre {
+// NewA returns a fiber of type A_n.
+func NewA(n int) *Fiber {
 	i := strconv.Itoa(n)
-	contr := make([]*nt.Frac, (n+1)/2+1) // A_n fibres are symmetric
-	for i, _ := range contr {
+	contr := make([]*nt.Frac, (n+1)/2+1) // A_n fibers are symmetric
+	for i := range contr {
 		contr[i] = nt.NewFrac(i*((n+1)-i), n+1)
 	}
-	return &Fibre{n + 1, n, n + 1, "A_" + i, contr}
+	return &Fiber{n + 1, n, n + 1, "A_" + i, contr}
 }
 
-// NewD returns a fibre of type D_n, with n >= 4.
-func NewD(n int) *Fibre {
+// NewD returns a fiber of type D_n, with n >= 4.
+func NewD(n int) *Fiber {
 	//TODO(fs) should check d >= 4
 	i := strconv.Itoa(n)
 	contr := make([]*nt.Frac, 3) // no contr[3] as the two far components are symmetric
@@ -77,11 +81,11 @@ func NewD(n int) *Fibre {
 	contr[1] = nt.NewFrac(1, 1)
 	contr[2] = nt.NewFrac(n, 4)
 
-	return &Fibre{n + 2, n, 4, "D_" + i, contr}
+	return &Fiber{n + 2, n, 4, "D_" + i, contr}
 }
 
-// NewE returns a fibre of type E_n, with n=6,7 or 8.
-func NewE(n int) *Fibre {
+// NewE returns a fiber of type E_n, with n=6,7 or 8.
+func NewE(n int) *Fiber {
 	i := strconv.Itoa(n)
 	var contr []*nt.Frac
 	switch n {
@@ -92,24 +96,24 @@ func NewE(n int) *Fibre {
 	case 8:
 		contr = []*nt.Frac{nt.NewFrac(0, 1)}
 	}
-	return &Fibre{2 + n, n, 9 - n, "E_" + i, contr}
+	return &Fiber{2 + n, n, 9 - n, "E_" + i, contr}
 }
 
-func (f Fibre) String() string {
+func (f Fiber) String() string {
 	return f.name
 }
 
 // Disc returns the discriminant of a given root lattice.
-func (f Fibre) Disc() (d int) {
+func (f Fiber) Disc() (d int) {
 	return f.d
 }
 
 // Contrib returns a slice of correction terms for the height of sections.
-func (f Fibre) Contrib() []*nt.Frac {
+func (f Fiber) Contrib() []*nt.Frac {
 	return f.contr
 }
 
-// Disc returns the discriminant of a configuration of singular fibres.
+// Disc returns the discriminant of a configuration of singular fibers.
 func (c Config) Disc() (d int) {
 	d = 1
 	for _, v := range c {
@@ -118,7 +122,7 @@ func (c Config) Disc() (d int) {
 	return d
 }
 
-// Euler returns the Euler number of a surface with this configuration of singular fibres.
+// Euler returns the Euler number of a surface with this configuration of singular fibers.
 func (c Config) Euler() (e int) {
 	for _, v := range c {
 		e += v.e
@@ -126,7 +130,7 @@ func (c Config) Euler() (e int) {
 	return e
 }
 
-// Rank returns the rank of the lattice spanned by the configuration of singular fibres.
+// Rank returns the rank of the lattice spanned by the configuration of singular fibers.
 func (c Config) Rank() (r int) {
 	for _, v := range c {
 		r += v.r
@@ -134,7 +138,7 @@ func (c Config) Rank() (r int) {
 	return r
 }
 
-// String returns the names of the root lattices in a configuration of singular fibres.
+// String returns the names of the root lattices in a configuration of singular fibers.
 func (c Config) String() (s string) {
 	for i, v := range c {
 		if i > 0 {
@@ -154,10 +158,9 @@ func (c Config) WalkHeights(d int) {
 func (c Config) walkHeightsIter(contr *nt.Frac, rest Config, inter []int, goal *nt.Frac) {
 	if len(rest) == 0 {
 		height := nt.NewFrac(4, 1)
-		if zeroIntersection != 0 {
-			height.Add(height, nt.NewFrac(2*zeroIntersection, 1))
-		}
+		height.Add(height, nt.NewFrac(2*zeroIntersection, 1)) // possible intersection with the zero-section
 		height.Sub(height, contr)
+
 		disc := nt.NewFrac(0, 1)
 		disc.Mul(height, nt.NewFrac(c.Disc(), 1))
 		if disc.Equal(goal) {
@@ -170,8 +173,8 @@ func (c Config) walkHeightsIter(contr *nt.Frac, rest Config, inter []int, goal *
 	}
 }
 
-// WalkConfigs calls WalkHeights for all fibre configurations with rank == r.
-func WalkConfigs(d, r int, c Config, fibers []*Fibre) {
+// WalkConfigs calls WalkHeights for all fiber configurations with rank == r.
+func WalkConfigs(d, r int, c Config, fibers []*Fiber) {
 	if c.Euler() > 24 {
 		return
 	}
@@ -190,17 +193,17 @@ func main() {
 
 	// We search for a configuration with one section that gives discriminant D.
 	// We only look for configurations with rank = R and e < 24.
-	fibres := []*Fibre{}
-	fibres = append(fibres, NewE(6))
-	fibres = append(fibres, NewE(7))
-	fibres = append(fibres, NewE(8))
+	fibers := []*Fiber{}
+	fibers = append(fibers, NewE(6))
+	fibers = append(fibers, NewE(7))
+	fibers = append(fibers, NewE(8))
 	for i := 1; i < 18; i++ {
-		fibres = append(fibres, NewA(i))
+		fibers = append(fibers, NewA(i))
 	}
 	for i := 4; i < 14; i++ {
-		fibres = append(fibres, NewD(i))
+		fibers = append(fibers, NewD(i))
 	}
-	for i, v := range fibres {
-		WalkConfigs(D, R, Config{v}, fibres[i:])
+	for i, v := range fibers {
+		WalkConfigs(D, R, Config{v}, fibers[i:])
 	}
 }
