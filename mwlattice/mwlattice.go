@@ -15,12 +15,13 @@ package main
 import (
 	nt "github.com/schulze/surfari/frac"
 	// "big"
+	"flag"
 	"fmt"
 	"strconv"
-	"flag"
 )
 
-var D, R, zeroIntersection  int
+var D, R, zeroIntersection int
+
 func init() {
 	flag.IntVar(&D, "D", 35, "discriminant of the lattice we want to construct")
 	flag.IntVar(&R, "R", 17, "rank of the lattice we want to construct")
@@ -29,10 +30,10 @@ func init() {
 
 // Fibre represents the root lattice of a singular fibre.
 type Fibre struct {
-	e int // Euler number
-	r int // rank
-	d int // discriminant
-	name string // [ADE]_n
+	e     int        // Euler number
+	r     int        // rank
+	d     int        // discriminant
+	name  string     // [ADE]_n
 	contr []*nt.Frac // contribution of components to the height of sections
 }
 
@@ -60,11 +61,11 @@ func init() {
 // NewA returns a fibre of type A_n.
 func NewA(n int) *Fibre {
 	i := strconv.Itoa(n)
-	contr := make([]*nt.Frac, (n+1)/2 + 1)  // A_n fibres are symmetric
+	contr := make([]*nt.Frac, (n+1)/2+1) // A_n fibres are symmetric
 	for i, _ := range contr {
 		contr[i] = nt.NewFrac(i*((n+1)-i), n+1)
 	}
-	return &Fibre{n+1, n, n+1, "A_" + i, contr}
+	return &Fibre{n + 1, n, n + 1, "A_" + i, contr}
 }
 
 // NewD returns a fibre of type D_n, with n >= 4.
@@ -76,7 +77,7 @@ func NewD(n int) *Fibre {
 	contr[1] = nt.NewFrac(1, 1)
 	contr[2] = nt.NewFrac(n, 4)
 
-	return &Fibre{n+2, n, 4, "D_" + i, contr}
+	return &Fibre{n + 2, n, 4, "D_" + i, contr}
 }
 
 // NewE returns a fibre of type E_n, with n=6,7 or 8.
@@ -84,11 +85,14 @@ func NewE(n int) *Fibre {
 	i := strconv.Itoa(n)
 	var contr []*nt.Frac
 	switch n {
-	case 6: contr = []*nt.Frac{nt.NewFrac(0,1), nt.NewFrac(4, 3)}
-	case 7: contr = []*nt.Frac{nt.NewFrac(0,1), nt.NewFrac(3, 2)}
-	case 8: contr = []*nt.Frac{nt.NewFrac(0,1)}
+	case 6:
+		contr = []*nt.Frac{nt.NewFrac(0, 1), nt.NewFrac(4, 3)}
+	case 7:
+		contr = []*nt.Frac{nt.NewFrac(0, 1), nt.NewFrac(3, 2)}
+	case 8:
+		contr = []*nt.Frac{nt.NewFrac(0, 1)}
 	}
-	return &Fibre{2+n, n, 9-n, "E_" + i, contr}
+	return &Fibre{2 + n, n, 9 - n, "E_" + i, contr}
 }
 
 func (f Fibre) String() string {
@@ -143,25 +147,25 @@ func (c Config) String() (s string) {
 
 // WalkHeights prints all possible ways a section may meet the given configuration
 // to produce a lattice with discriminant d.
-func (c Config) WalkHeights (d int) {
-	c.walkHeightsIter(nt.NewFrac(0,1), c, []int{}, nt.NewFrac(d,1))
+func (c Config) WalkHeights(d int) {
+	c.walkHeightsIter(nt.NewFrac(0, 1), c, []int{}, nt.NewFrac(d, 1))
 }
 
-func (c Config) walkHeightsIter (contr *nt.Frac, rest Config, inter []int, goal *nt.Frac) {
+func (c Config) walkHeightsIter(contr *nt.Frac, rest Config, inter []int, goal *nt.Frac) {
 	if len(rest) == 0 {
-		height := nt.NewFrac(4,1)
+		height := nt.NewFrac(4, 1)
 		if zeroIntersection != 0 {
 			height.Add(height, nt.NewFrac(2*zeroIntersection, 1))
 		}
 		height.Sub(height, contr)
-		disc := nt.NewFrac(0,1)
-		disc.Mul(height, nt.NewFrac(c.Disc(),1))
+		disc := nt.NewFrac(0, 1)
+		disc.Mul(height, nt.NewFrac(c.Disc(), 1))
 		if disc.Equal(goal) {
 			fmt.Println(c, "with inter=", inter, "contr=", contr, "d_T=", c.Disc(), "d_NS=", disc)
 		}
 	} else {
 		for i, v := range rest[0].Contrib() {
-			c.walkHeightsIter(nt.NewFrac(0,1).Add(contr, v), rest[1:], append(inter, i), goal)
+			c.walkHeightsIter(nt.NewFrac(0, 1).Add(contr, v), rest[1:], append(inter, i), goal)
 		}
 	}
 }
